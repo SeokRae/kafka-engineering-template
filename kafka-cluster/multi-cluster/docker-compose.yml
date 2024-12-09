@@ -1,0 +1,101 @@
+version: '3'
+
+networks:
+  kafka_network:
+    driver: bridge
+
+volumes:
+  kafka1_data:
+  kafka2_data:
+  kafka3_data:
+
+services:
+  kafka1:
+    # https://hub.docker.com/r/confluentinc/cp-kafka/tags
+    image: confluentinc/cp-kafka:7.7.1
+    hostname: kafka1
+    container_name: kafka1
+    ports:
+      - "19092:19092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1:9093,2@kafka2:9093,3@kafka3:9093'
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka1:9092,CONTROLLER://kafka1:9093,EXTERNAL://0.0.0.0:19092'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka1:9092,EXTERNAL://localhost:19092'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      CLUSTER_ID: 'KafkaKraftCluster'
+    volumes:
+      - kafka1_data:/var/lib/kafka/data
+    networks:
+      - kafka_network
+
+  kafka2:
+    # https://hub.docker.com/r/confluentinc/cp-kafka/tags
+    image: confluentinc/cp-kafka:7.7.1
+    hostname: kafka2
+    container_name: kafka2
+    ports:
+      - "29092:29092"
+    environment:
+      KAFKA_NODE_ID: 2
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1:9093,2@kafka2:9093,3@kafka3:9093'
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka2:9092,CONTROLLER://kafka2:9093,EXTERNAL://0.0.0.0:29092'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka2:9092,EXTERNAL://localhost:29092'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      CLUSTER_ID: 'KafkaKraftCluster'
+    volumes:
+      - kafka2_data:/var/lib/kafka/data
+    networks:
+      - kafka_network
+
+  kafka3:
+    # https://hub.docker.com/r/confluentinc/cp-kafka/tags
+    image: confluentinc/cp-kafka:7.7.1
+    hostname: kafka3
+    container_name: kafka3
+    ports:
+      - "39092:39092"
+    environment:
+      KAFKA_NODE_ID: 3
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1:9093,2@kafka2:9093,3@kafka3:9093'
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka3:9092,CONTROLLER://kafka3:9093,EXTERNAL://0.0.0.0:39092'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka3:9092,EXTERNAL://localhost:39092'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      CLUSTER_ID: 'KafkaKraftCluster'
+    volumes:
+      - kafka3_data:/var/lib/kafka/data
+    networks:
+      - kafka_network
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    ports:
+      - "9090:8080"
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=KafkaKraftCluster
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka1:9092,kafka2:9092,kafka3:9092
+    networks:
+      - kafka_network

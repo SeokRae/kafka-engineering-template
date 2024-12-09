@@ -1,0 +1,40 @@
+version: '3'
+services:
+  # kafka 서비스 설정
+  kafka:
+    image: confluentinc/cp-kafka:7.5.1
+    container_name: kafka
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    # 환경 변수 설정 https://kafka.apache.org/documentation/#brokerconfigs
+    environment:
+      # 클러스터 아이디 설정
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      # 프로세스 역할 설정
+      KAFKA_NODE_ID: 1
+      # 노드 아이디 설정
+      KAFKA_LISTENERS: 'PLAINTEXT://:9092,CONTROLLER://:9093'
+      # 리스너 설정
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT'
+      # 컨트롤러 프로토콜 설정
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@localhost:9093'
+      # 컨트롤러 퀄럼 투표자 설정
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      # 외부 접근 주소 설정
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://localhost:9092'
+      # 로그 세그먼트 크기 설정
+      KAFKA_LOG_SEGMENT_BYTES: 1073741824
+      # 로그 보관 기간 설정
+      KAFKA_LOG_RETENTION_HOURS: 168
+      # 메시지 최대 크기 설정
+      KAFKA_MESSAGE_MAX_BYTES: 2000000
+      # 로그 디렉토리 설정
+      KAFKA_LOG_DIRS: '/var/lib/kafka/logs'
+      # 토픽 자동 생성 설정(false: 자동 생성 안함, true: 자동 생성)
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+    volumes:
+      # 데이터 디렉토리 설정
+      - ./data/kafka:/var/lib/kafka/data
+      # 로그 디렉토리 설정
+      - ./logs:/var/lib/kafka/logs
